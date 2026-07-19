@@ -1,0 +1,119 @@
+.portraitDivider {
+	min-height: 8px !important;
+    width: calc(100% - 8px) !important;
+    margin: 0px 4px !important;
+    cursor: ns-resize !important;
+    height: 10px;
+}
+
+ i.portraitDividerIcon::before {
+	-webkit-transform: translateX(0) !important;
+	margin-right: .35em;
+	margin-left: 0;
+}
+
+.rotateIcon {
+    -webkit-transform: rotate(90deg) !important;
+}
+
+/* HELPER CLASSES */
+
+.topBuffer {
+	margin-top: 2px;
+}
+
+.bottomBuffer {
+	margin-bottom: 2px;
+}
+
+.leftBuffer {
+	margin-left: 2px;
+}
+
+.rightBuffer {
+	margin-right: 2px;
+}
+
+.clearMargin {
+	margin: inherit !important;
+}
+
+.clearWidth {
+	width: inherit !important;
+}
+
+.clearPadding {
+	padding: inherit !important;
+}
+
+.clearPosition {
+	position: inherit !important;
+}
+
+.clearPositionAmt {
+	left: 0px !important;
+	right: 0px !important;
+	top: 0px !important;
+	bottom: 0px !important;
+}
+
+.clearPositionLeft {
+	left: inherit !important;
+}
+
+.clearPositionTop {
+	top: inherit !important;
+}
+.clearPositionBottom {
+	bottom: inherit !important;
+}
+
+.addFlex {
+	display: -webkit-flex !important;
+}
+
+.flexCol {
+	display: -webkit-flex;
+	-webkit-flex-flow: column !important;
+}
+
+.flexRow {
+	display: -webkit-flex !important;
+	-webkit-flex-flow: row !important;
+}
+
+.heightFiftyPct {
+	height: 50% !important;
+}
+
+.heightOneThirdPct {
+	height: 33.3333% !important;
+}
+
+.heightFullPct {
+	height: 100% !important;
+}
+
+i.marginTopFifty:before {
+	/*margin-top: 50% !important;*/
+}
+
+.disabled-radio {
+    pointer-events: none;
+}
+
+.hidden {
+	display: none !important;
+}
+
+.marginTopMinusThree {
+	margin-top: -3px;
+}
+
+.hiddenLib {
+	visibility : hidden;
+	position   : absolute;
+	overflow   : hidden;
+	height     : 1px;
+	margin     : -1px !important;
+}

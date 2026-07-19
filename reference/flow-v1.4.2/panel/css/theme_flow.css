@@ -1,0 +1,192 @@
+/* META */
+body {
+	background-color: #323232 !important;
+	color: #888888 !important;
+}
+
+span::selection,
+.graph::selection {
+   background: rgba(0, 0, 0, 0);
+}
+
+::-webkit-scrollbar-thumb	{ background-color: #126898;	}
+
+
+/* CUSTOM STYLING */
+button, .button {
+	background: #1f1f1f;
+	color: #dedede;
+}
+
+button:hover, .button:hover {
+	background: #000000;
+}
+
+.btn-default {
+  color: #ffffff;
+  background-color: #424242;
+  border-color: #424242;
+}
+
+.btn-default:active:hover,
+.btn-default.active:hover,
+.btn-default:active:focus,
+.btn-default.active:focus,
+.btn-default:active.focus,
+.btn-default.active.focus,
+.btn-primary,
+.btn-primary:focus,
+.easeDirection.active,
+.easeDirection:active:hover,
+.easeDirection.active:hover,
+.easeDirection.active:focus {
+	background-color: #006699;
+}
+
+.btn-default.disabled:hover {
+	background-color: #444;
+}
+
+.btn-default:hover,
+.btn-primary:hover,
+.btn-primary:hover:focus {
+	background-color: #105d89;
+}
+
+.btn-primary:active:hover,
+.btn-primary:active:hover:focus,
+.btn-default:active:hover {
+	background-color: #0d496a;
+}
+
+/* APPLY button */
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:hover,
+.btn-primary:hover:focus {
+  color: #ffffff;
+}
+
+/* KEYFRAMES / EXPRESSION buttons */
+.activeToggle.active:hover,
+.activeToggle:active:focus,
+.activeToggle.active:focus,
+.activeToggle:active.focus,
+.activeToggle.active.focus {
+	background-color: #ffc107;
+}
+
+.activeToggle.active,
+.activeToggle:active:hover,
+.activeToggle.active:hover {
+	background-color: #ffc107;
+	color:#000;
+}
+
+/* GRAPH */
+.canvas-wrapper {
+    border-left: 1px solid #7ebfe7;
+    border-bottom: 1px solid #7ebfe7;
+}
+
+#graphPanel-bottom {
+	background-color: #323232;
+}
+
+#P0,#P1,#P2,#P3 { background: #fdbf28; }
+
+/* DIVIDER */
+#divider {
+		background-color: #3C3C3C;
+}
+
+/* LIBRARY */
+#library > a {
+	color: #666;
+}
+
+#library > a > button {
+	background: #444;
+}
+
+/* Hover Effects */
+#library > a:hover > canvas{
+	background: #71accf;
+}
+
+#library > a > button:hover {
+	background: #eb590c;
+}
+#library > a > button:active:hover {
+	background: #a43e08;
+}
+
+/* Active Element */
+#library > a.selected,
+#library > a:hover > span {
+	color: white !important;
+}
+
+#library > a.selected > canvas {
+	background: #7ebfe7;
+}
+
+#library > a.selected:hover > canvas {
+	background: #71accf;
+}
+
+#library > a.selected:active > canvas,
+#library > a:active:focus > canvas {
+	background: #5885a1;
+}
+
+#library > a.deselected > canvas {
+	background: #424242;
+}
+
+/* ABOUT AND CONFIG */
+
+/* ABOUT WINDOW */
+
+.blue 		{ color: #126898; font-weight: 400; }
+.lightBlue 	{ color: #7ebfe7; }
+.yellow 	{ color: #fdbf28; }
+.orange 	{ color: #eb590c; }
+
+#aboutPage, #configPage {
+	color: white;
+	background-color: #7ebfe7;
+}
+
+#aboutPage ::selection, #configPage ::selection {
+    color: white;
+    background-color: rgba(253, 191, 40,0.97);
+}
+
+#config-content .btn-default {
+	background-color: #424242;
+}
+
+#config-content .btn-default.active {
+	background-color: #ffc107;
+}
+
+#config-content select {
+	color: #424242;
+}
+
+#config-content input {
+	color: #424242;
+}
+
+.btnCloseAbout:hover {
+	color: #126898;
+}
+
+.stringURL:hover {
+	color: #126898;
+}
+
+#about-footer{
+    background-color: #126898;
+}

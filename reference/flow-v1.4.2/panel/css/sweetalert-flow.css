@@ -1,0 +1,63 @@
+.sweet-alert h2 {
+	font-size: 20px;
+	line-height: inherit;
+	text-transform: capitalize;
+	margin-top: 0px;
+	margin-bottom: 5px;
+}
+
+.sweet-alert {
+	padding: 10px 10px 10px 10px;
+}
+
+.sweet-alert p {
+	/*overflow: scroll;*/
+	font-size: 13px;
+}
+
+.sweet-alert input {
+	text-align: center;
+	font-size: 13px;
+	margin-top: 15px;
+	margin-bottom: inherit;
+	padding: inherit;
+	height: 25px;
+}
+
+.sweet-alert button {
+	padding: .2em 1.2em;
+	margin: 5px 0px 0px ;
+	border-radius: 2px;
+    font-size: 14px;
+}
+
+/* CANCEL and OK button contrainer */
+.sweet-alert div.sa-button-container {
+	margin-top: 14px;
+	padding: 0px;
+}
+
+/* X button once entering wrong data into Input Field */
+.sweet-alert .sa-input-error {
+    top: 25px;
+    right: 9px;
+}
+
+.sweet-alert .sa-input-error::before, .sweet-alert .sa-input-error::after {
+    width: 14px;
+    height: 4px;
+}
+
+/* "I" icon in error window */
+.sweet-alert .sa-error-container .icon {
+    width: 18px;
+    height: 18px;
+    color: white;
+    line-height: 18px;
+}
+
+/* Scales down animated icons */
+.sweet-alert .sa-icon {
+	-webkit-transform: translateY(-25px) scale(0.7, 0.7) ;
+	margin-bottom: -25px;
+}

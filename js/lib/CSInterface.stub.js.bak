@@ -1,0 +1,79 @@
+/**
+ * Minimal CSInterface stub for DoMotions.
+ * ─────────────────────────────────────────────────────────────────────
+ * THIS IS A DEVELOPMENT STUB. It allows the extension panel to load
+ * and run in a browser for testing without the Adobe CEP runtime.
+ *
+ * For production, REPLACE this file with the official CSInterface.js from:
+ *   https://github.com/Adobe-CEP/CEP-Resources
+ *
+ * Download the version that matches your target CEP API level
+ * (e.g. CEP 11 for CC 2024+).
+ * ─────────────────────────────────────────────────────────────────────
+ */
+
+var SystemPath = {
+    USER_DATA: 'userData',
+    COMMON_FILES: 'commonFiles',
+    MY_DOCUMENTS: 'myDocuments',
+    APPLICATION: 'application',
+    EXTENSION: 'extension',
+    HOST_APPLICATION: 'hostApplication'
+};
+
+function CSInterface() {}
+
+CSInterface.prototype.evalScript = function (script, callback) {
+    if (typeof callback === 'function') {
+        try {
+            // In a real CEP environment, this calls ExtendScript.
+            // This stub simply returns 'EvalScript error.' to indicate
+            // it's not running inside a real host.
+            callback('EvalScript error.');
+        } catch (e) {
+            callback('EvalScript error.');
+        }
+    }
+};
+
+CSInterface.prototype.getSystemPath = function (pathType) {
+    return '';
+};
+
+CSInterface.prototype.addEventListener = function (type, listener, obj) {};
+
+CSInterface.prototype.removeEventListener = function (type, listener, obj) {};
+
+CSInterface.prototype.requestOpenExtension = function (extensionId, params) {};
+
+CSInterface.prototype.getExtensionID = function () {
+    return 'com.domotions.panel.main';
+};
+
+CSInterface.prototype.closeExtension = function () {};
+
+CSInterface.prototype.getHostEnvironment = function () {
+    return {
+        appName: 'AEFT',
+        appVersion: '17.0',
+        appLocale: 'en_US',
+        appUILocale: 'en_US',
+        appSkinInfo: {
+            baseFontFamily: 'Segoe UI',
+            baseFontSize: 12,
+            panelBackgroundColor: { color: { red: 30, green: 30, blue: 30, alpha: 255 } },
+            systemHighlightColor: { color: { red: 0, green: 212, blue: 255, alpha: 255 } }
+        },
+        isAppOnline: true
+    };
+};
+
+CSInterface.prototype.getNetworkPreferences = function () {
+    return null;
+};
+
+CSInterface.prototype.getCurrentApiVersion = function () {
+    return { major: 11, minor: 0, micro: 0 };
+};
+
+CSInterface.prototype.setScriptText = function (text) {};

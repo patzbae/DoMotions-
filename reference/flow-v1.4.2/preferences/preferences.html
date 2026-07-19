@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+
+  <!-- Insert this line above script imports -->
+  <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
+  <script>if (typeof exports === 'object') { window.exports = exports; exports = undefined; }</script>
+
+  <!-- Insert this line after script imports -->
+  <script>if (window.module) module = window.module;</script>
+  <script>if (window.exports) exports = window.exports;</script>
+
+  <link href="../dialog/dialog.css" rel="stylesheet" id="hostStyle" />
+  <style>
+    body {
+      background-color: rgb(38, 38, 38);
+    }
+
+    .tabPanel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      padding-bottom: 10px;
+      max-width: initial;
+      white-space: inherit;
+    }
+
+    label {
+      padding-left: 2.5em;
+      text-indent: -2.5em;
+    }
+
+    body {
+      letter-spacing: 0.0625em;
+    }
+
+    .slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 2px;
+        background: #454545;
+        outline: none;
+        margin: 0px 10px;
+    }
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #2d8ceb;
+        cursor: pointer;
+    }
+
+    .sliderDiv {
+      display: flex;
+      align-items: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #libraryItemSize {
+      width: 24px;
+      text-align: center;
+      color: #2d8ceb;
+      font-weight: bold;
+      margin-bottom: 0px;
+      border-bottom: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="main-header">
+    <iframe src="../custom/header.html" scrolling="no"></iframe>
+  </header>
+
+  <nav id="menu" class="inner-block">
+    <div id="appearance-nav" class="nav-item is-active">Appearance</div>
+    <div id="behaviour-nav" class="nav-item">Behaviour</div>
+  </nav>
+
+
+  <div id="appearance" class="content">
+    <div class="inner-block tabPanel">
+
+      <label class="label">
+        Flow Theme:
+        <select name="flowTheme" id="flowTheme" class="dark">
+          <option value="Flow">Flow</option>
+          <option value="AE">AE</option>
+        </select>
+      </label>
+
+      <label class="label" title="Default: ON">
+        <input type="checkbox" name="config_appearance" class="checkbox analytics-checkbox" id="showLastCurve" checked>
+        <span class="">Show Last Curve in Graph</span>
+      </label>
+      <label class="label" title="Default: ON">
+        <input type="checkbox" name="config_appearance" class="checkbox analytics-checkbox" id="showTooltips" checked>
+        <span class="">Show Tooltips</span>
+      </label>
+      <label class="label" title="Default: ON">
+        <input type="checkbox" name="config_appearance" class="checkbox analytics-checkbox" id="displayLibIORow" checked>
+        <span class="">Show Library IO Buttons</span>
+      </label>
+      <label class="label" title="Default: ON">
+        <input type="checkbox" name="config_appearance" class="checkbox analytics-checkbox" id="displayLibScalers" checked>
+        <span class="">Show Library Item Resize Buttons</span>
+      </label>
+
+      <label class="label" for="libraryItemSize" style="margin-bottom: -12px">
+        Library Item Size:
+      </label>
+      <div class="sliderDiv">
+        <input type="range" min="1" max="100" value="0" class="slider" id="slider">
+        <input type="text" name="title" id="libraryItemSize" class="single-line-input"></input>
+      </div>
+    </div>
+  </div>
+
+  <div id="behaviour" class="content hidden">
+    <div class="inner-block tabPanel">
+      <label class="label" title="Default: ON">
+        <input type="checkbox" name="config_behavior" class="checkbox analytics-checkbox" id="showAlerts" checked>
+        <span class="">Show Alerts</span>
+      </label>
+
+      <label class="label" for="autoApplyCurve" title="Default: OFF">
+        <input type="checkbox" name="config_behavior" class="checkbox analytics-checkbox" id="autoApplyCurve">
+        <span>Auto-apply curve</span>
+      </label>
+
+      <label class="label" for="readValuesUsesEaseDirection" title="Default: ON">
+        <input type="checkbox" name="config_behavior" class="checkbox analytics-checkbox" id="readValuesUsesEaseDirection" checked>
+        <span>'Read Values' uses Ease Direction</span>
+      </label>
+
+      <label class="label" for="alwaysCBForExpressions" title="Default: OFF">
+        <input type="checkbox" name="config_behavior" class="checkbox analytics-checkbox" id="alwaysCBForExpressions">
+        <span>Always use cubicbezier function for expressions</span>
+      </label>
+
+      <label class="label" for="alwaysOverwriteExpression" title="Default: OFF">
+        <input type="checkbox" name="config_behavior" class="checkbox analytics-checkbox" id="alwaysOverwriteExpression">
+        <span>Always overwrite expression</span>
+      </label>
+
+      <label class="label debug hidden" for="userDebug" title="Default: OFF">
+        <input type="checkbox" name="config_behavior" class="checkbox analytics-checkbox" id="userDebug">
+        <span>User Debug</span>
+      </label>
+
+      <input type="button" class="rounded-button debug hidden" id="btn_revealSettings" value="Open Settings File"></input>
+      <input type="button" class="rounded-button debug hidden" id="btn_revealLog" value="Open Log File"></input>
+    </div>
+  </div>
+
+  <div id="pref-footer" class="footer no-border aesp-appBackgroundColor">
+    <input type="button" class="rounded-button debug hidden" id="btn_trashPrefs" value="Trash Prefs"></input>
+    <input type="button" class="rounded-button debug hidden" id="btn_refresh" value="F5"></input>
+    <input type="button" class="rounded-button" id="btn_close" value="Close" />
+    <input type="button" class="rounded-button" id="btn_ok" value="OK" />
+  </div>
+
+</body>
+
+</html>
+
+<script src="preferences.js"></script>

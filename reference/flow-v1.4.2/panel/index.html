@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <meta charset="utf-8" />
+
+        <title>Flow</title>
+
+        <link href="css/gwebfont.css" rel="stylesheet" />
+        <link href="css/bootstrap.css" rel="stylesheet" />
+        <link href="css/style.css" rel="stylesheet" />
+        <link href="css/responsive.css" rel="stylesheet" />
+        <link href="css/sweetalert.css" rel="stylesheet" />
+        <link href="css/sweetalert-flow.css" rel="stylesheet" />
+        <link href="css/flow-font.css" rel="stylesheet" />
+        <link href="css/jquery-ui.min.css" rel="stylesheet" />
+        <link href="css/theme_ae.css" rel="stylesheet" id="theme_css"/>
+
+        <style id='hostStyle'></style>
+    </head>
+
+    <body class="hostBgd">
+
+    <div id="app">
+        <div id="identifier" class="corner-ribbon bottom-right"></div>
+
+        <div id="container">
+            <div id="graphPanel">
+                <div id="graphPanel-top">
+                    <div class="canvas-wrapper">
+                        <span   class="control-point" id="P0"></span>
+                        <button class="control-point" id="P1"></button>
+                        <button class="control-point" id="P2"></button>
+                        <span   class="control-point" id="P3"></span>
+
+                        <!--
+                        IMPORTANT
+                        2. CANVAS SIZE -->
+                        <canvas class="graph" height="2400" width="196" id="lastCurve"></canvas>
+                        <canvas class="graph" height="2400" width="196" id="curve"></canvas>
+                        <!--    -->
+                    </div>
+
+                </div>
+                <div id="graphPanel-bottom" class="hostBgd">
+
+                    <!-- These are controls -->
+                    <div id="values" class="btn-group btn-group-justified" >
+                        <a class="btn btn-xs btn-default" id="btn_readValues" style="width:1%" title="Read Values" data-placement="auto" rel="tooltip" >
+                            <i class="icon-import-from-ae"></i>
+                        </a>
+                        <div class="btn btn-xs btn-default" id="btn_editBezierValues" style="width:5%" title="Edit Bezier Values" data-placement="auto" rel="tooltip">
+                            <span id="P1x" class="param">0</span>,
+                            <span id="P1y" class="param">0</span>,
+                            <span id="P2x" class="param">.25</span>,
+                            <span id="P2y" class="param">1</span>
+                        </div>
+                        <a class="btn btn-xs btn-default" id="btn_saveCurve" style="width:1%" title="Save" data-placement="auto" rel="tooltip" >
+                            <i class="icon-star-empty"></i>
+                        </a>
+                    </div>
+
+                    <div id="applyOptionsRow" class="btn-group-justified">
+                        <div id="applyAs" class="btn-group btn-group-justified thickBorderRight hostDarkBorder" data-toggle="buttons">
+                            <label class="btn btn-xs btn-default active activeToggle thinBorderRight hostDarkBorder" style="width:1%" id="btn_applyToKeys" title="Apply to Keys" data-placement="auto" rel="tooltip">
+                                <input type="radio" name="easeProperty" title="Apply to Keys" id="Keyframes" value="Keyframes" checked>
+                                <i class="icon-keyframes"></i>
+                                <!-- Keyframes -->
+                            </label>
+                            <label class="btn btn-xs btn-default activeToggle" style="width:1%" id="btn_applyToExpression" title="Apply to Expression" data-placement="auto" rel="tooltip">
+                                <input type="radio" name="easeProperty" title="Apply to Expression" id="Expression" value="Expression">
+                                <i class="icon-expression"></i>
+                                <!-- Expressions -->
+                            </label>
+                        </div>
+
+                        <div id="easeDirection" class="btn-group btn-group-justified" data-toggle="buttons">
+                            <label class="btn btn-xs btn-default easeDirection" id="easeOutLabel" title="Ease Out" rel="tooltip" data-placement="auto" style="width:1%">
+                                <input type="radio" id="Out" name="easeDirection" title="Ease Out" value="Out">
+                                    <i class="icon-direction-right"></i>
+                                    <!-- Out -->
+                            </label>
+                            <label class="btn btn-xs btn-default active easeDirection thinBorderLeft thinBorderRight hostDarkBorder" id="easyEaseLabel" title="Easy Ease" rel="tooltip" data-placement="auto" style="width:1%">
+                                <input type="radio" id="Both" name="easeDirection" title="Easy Ease" value="Both" checked>
+                                    <i class="icon-direction-both"></i>
+                                    <!-- Both -->
+                            </label>
+                            <label class="btn btn-xs btn-default easeDirection" id="easeInLabel" title="Ease In" rel="tooltip" data-placement="auto" style="width:1%">
+                                <input type="radio" id="In" name="easeDirection" title="Ease In" value="In">
+                                    <i class="icon-direction-left"></i>
+                                    <!-- In -->
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn btn-md btn-primary btn-block" id="btn_applyValues" title="Apply Curve" data-placement="auto" rel="tooltip"> APPLY </button>
+                </div>
+            </div>
+
+            <div id="divider"><i class="icon-divider"></i></div>
+
+            <div id="libraryPanel">
+                <div id="libraryNav">
+                    <div id="currentLibrary" class="btn-group btn-group-justified" data-toggle="buttons">
+                        <!-- Defaults -->
+                        <label id="defaultLibButton" class="btn btn-default active activeToggle hostDarkBorder" title="Default Curves" rel="tooltip" data-placement="auto" >
+                            <input type="radio" name="currentLibrary" value="default" title="Default Curves" checked>
+                            <i class="icon-graduation-cap icon-lg"></i>
+                        </label>
+                    </div>
+
+                    <div id="libraryIORow" class="btn-group btn-group-justified hidden" data-toggle="buttons">
+                        <a class="btn btn-xs btn-default" id="btn_clearLib" title="Clear Library" data-placement="auto" rel="tooltip">
+                            <i class="icon-refresh"></i> </a>
+                        <a class="btn btn-xs btn-default hostDarkBorder" id="btn_export" title="Export Library" data-placement="auto" rel="tooltip">
+                            <i class="icon-upload"></i> </a>
+                        <a class="btn btn-xs btn-default" id="btn_import" title="Import Library" data-placement="auto" rel="tooltip">
+                            <i class="icon-download"></i></a>
+                    </div>
+                </div>
+
+                <div id="libContainer">
+                    <div id="libSizeButtons">
+                        <button class="btn btn-md" id="btn_libIconSizeDnBtn" title="SizeDn" data-placement="auto" rel="tooltip">-</button>
+                        <button class="btn btn-md" id="btn_libIconSizeUpBtn" title="SizeUp" data-placement="auto" rel="tooltip">+</button>
+                    </div>
+                    <div id="library">
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <script type="text/javascript" src="js/panel.js" charset="utf-8" async></script>
+        <style>
+            .aesp-notification.aesp-is-open {
+                height: 0 !important;
+                overflow: initial !important
+            }
+        </style>
+
+    </body>
+</html>

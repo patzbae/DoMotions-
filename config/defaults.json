@@ -1,0 +1,28 @@
+{
+    "general": {
+        "theme": "dark",
+        "accentColor": "#00D4FF",
+        "showStatusDuration": 3000,
+        "lastActiveModule": "easing"
+    },
+    "modules": {
+        "easing": {
+            "defaultInfluenceIn": 33,
+            "defaultInfluenceOut": 33,
+            "defaultType": "easeInOut"
+        },
+        "anchor": {
+            "compensateScale": true,
+            "useSourceRect": true
+        },
+        "layer": {
+            "nullSize": 100,
+            "nullColor": [1, 0, 0]
+        }
+    },
+    "ui": {
+        "iconFormat": "svg",
+        "animationsEnabled": true,
+        "compactMode": false
+    }
+}

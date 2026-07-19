@@ -1,0 +1,623 @@
+/* MANDATORY PLACEMENT */
+
+* {	margin: 0;
+	box-sizing: border-box;
+	}
+
+html, body { height : 100%; }
+
+body {
+	background: #323232;
+	font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 10px;
+	overflow: hidden !important;
+	position: relative;
+	letter-spacing: 0.0625em;
+
+	/* Disable selection so it doesn't get annoying when dragging. */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: moz-none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+span::selection,
+.graph::selection {
+   background: rgba(0, 0, 0, 0);
+}
+
+::-webkit-scrollbar 		{ width: 6px; height: 6px;	    }
+::-webkit-scrollbar-thumb	{ background-color: #126898;	}
+
+h1 { font-size: 1.5em; 	padding-top: 20px;}
+h2 { font-size: 1.25em; }
+h3 { font-size: 1.17em; }
+
+iframe.aesp { z-index: 1000; }
+
+#applyOptionsRow {
+	margin: 2px 0px;
+}
+
+#container {
+	display: -webkit-flex;
+	overflow: hidden;
+	height: 100vh;
+}
+
+	#graphPanel {
+		display: -webkit-flex;
+		-webkit-order: 1;
+		-webkit-flex-flow: column;
+		-webkit-align-items: center;
+		order: 1;
+		flex-flow: column;
+		align-items: center;
+		min-width: 5px;
+		min-height: 5px;
+		margin: 4px;
+		position: absolute;
+		height: calc(100% - 82px);
+	}
+
+		#graphPanel-top {
+			-webkit-order: 1;
+			-webkit-flex-grow: 1;
+			-webkit-align-items: center;
+			order: 1;
+			flex-grow: 1;
+			align-items: center;
+			display: -webkit-flex;
+			min-width: 10px;
+			min-height: 10px;
+		}
+
+		#graphPanel-bottom {
+			-webkit-order: 2;
+			order: 2;
+			margin-top: auto;
+			z-index: 1;
+			background-color: #323232;
+			overflow: hidden;
+			display: block;
+			width: 200px;
+			bottom: 4px;
+			position: fixed;
+		}
+
+	#divider {
+		display: -webkit-flex;
+		-webkit-order: 2;
+		-webkit-flex-shrink: 0;
+		-webkit-align-items: center;
+		order: 2;
+		flex-shrink: 0;
+		align-items: center;
+		margin: 4px 0px;
+		width: 10px !important;
+		cursor: ew-resize;
+		position: relative;
+		background-color: #3C3C3C;
+		left: 205px;
+		z-index: 1;
+	}
+
+		#divider i {
+			margin: auto;
+		}
+
+	#libraryPanel {
+		display: -webkit-flex;
+		-webkit-order: 3;
+		-webkit-flex-flow: column;
+		order: 3;
+		flex-flow: column;
+		margin: 4px;
+		z-index: 0;
+		position: absolute;
+	}
+
+	#libSizeButtons {
+		z-index: 100;
+		position: absolute;
+		bottom: 2px;
+		right: 7px;
+		display: -webkit-flex;
+		-webkit-flex-flow: row;
+		flex-flow: row;
+		width: 40px;
+	}
+
+		#libSizeButtons .btn {
+			padding: 0px;
+			width: 50%;
+		}
+
+		#libraryNav {
+			-webkit-order: 1; 			/* Set as first child of #libraryPanel div */
+			-webkit-flex-shrink: 0; 	/* Do not shrink */
+			order: 1; 			/* Set as first child of #libraryPanel div */
+			flex-shrink: 0; 	/* Do not shrink */
+		}
+
+			#libraryIORow {
+				margin: 2px 0;
+				float: inherit;
+			}
+
+		#library {
+		}
+
+		#libContainer {
+			-webkit-order: 2; 			/* Set as second child of #libraryPanel div */
+			order: 2; 			/* Set as second child of #libraryPanel div */
+			overflow-y: auto;
+			overflow-x: hidden;
+			margin-left: -3px;
+			overflow-y: auto;
+			min-height: 0px;
+			height: 100%;
+		}
+
+.canvas-wrapper {
+	/*
+	INPORTANT!!!!
+	1. GRAPH SIZE 	*/
+	width:  196px;
+	height: 196px;
+	/*    		*/
+
+	min-width: 10px;
+	min-height: 10px;
+	background-size: calc(100% / 5);
+	background-image: linear-gradient(to right, #414141 1px, transparent 1px), linear-gradient(to bottom, #414141 1px, transparent 1px);
+	background-position: -1px 0;
+
+	border-left: 1px solid #7ebfe7;
+	border-bottom: 1px solid #7ebfe7;
+
+	position: relative;
+	margin: auto;
+}
+
+.graph {
+	/*
+	IMPORTANT !!!
+	3. CANVAS OFFSET
+	*/
+	left: 0px;
+	top: -1102px; /* -(graphHeight/2)-100+2 */
+	width: 196px;
+	height: 2400px;
+
+	min-width: 10px;
+	min-height: 10px;
+
+	/* position: relative; */
+	/* ABSOLUTE for stacked graphs.. */
+	position: absolute;
+}
+
+.control-point {
+	border-radius: 10px;
+	height: 6px;
+	margin: -3px 0 0 -3px;
+	outline: none;
+	position: absolute;
+	width: 6px;
+}
+
+#P0 { top: 100%;  }
+#P3 { left: 100%; }
+
+#P1, #P2 { /* MOVABLE DOTS */
+	cursor: pointer;
+	z-index: 1;
+	height: 8px;
+	width: 8px;
+	margin: -4px 0 0 -4px;
+}
+
+#P0,#P1,#P2,#P3 { background: #fdbf28; }
+
+
+
+/* CUSTOM STYLING */
+button, .button {
+	padding: .3em .5em;
+	border: 0;
+	background: #1f1f1f;
+	color: #dedede;
+	font-size: 50%;
+}
+
+button:hover, .button:hover {
+	background: #000000;
+}
+
+.btn {
+	border:none;
+	border-radius: 0 !important;
+}
+
+.btn-default:active:hover,
+.btn-default.active:hover,
+.btn-default:active:focus,
+.btn-default.active:focus,
+.btn-default:active.focus,
+.btn-default.active.focus {
+	background-color: #006699;
+}
+
+.btn-default.disabled:hover {
+	background-color: #444;
+}
+
+.btn-default:hover {
+	background-color: #105d89;
+}
+.btn-default:active:hover {
+	background-color: #0d496a;
+}
+
+.btn-default,
+.btn-default:focus,
+.btn-default:hover,
+.btn-default:hover:focus {
+  outline: none;
+}
+
+/* APPLY button */
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:hover,
+.btn-primary:hover:focus {
+  outline: none;
+  color: #ffffff;
+}
+
+.btn-primary,
+.btn-primary:focus {
+	background-color: #006699;
+}
+
+.btn-primary:hover,
+.btn-primary:hover:focus {
+	background-color: #105d89;
+}
+
+.btn-primary:active:hover,
+.btn-primary:active:hover:focus {
+	background-color: #0d496a;
+}
+
+
+/* BOTH / IN / OUT buttons */
+#easeDirection {
+	padding-left: 2px;
+}
+
+.easeDirection.active,
+.easeDirection:active:hover,
+.easeDirection.active:hover,
+.easeDirection.active:focus {
+	background-color: #006699;
+}
+
+/* KEYFRAMES / EXPRESSION buttons */
+.activeToggle.active:hover,
+.activeToggle:active:focus,
+.activeToggle.active:focus,
+.activeToggle:active.focus,
+.activeToggle.active.focus {
+	background-color: #ffc107;
+}
+
+.activeToggle.active,
+.activeToggle:active:hover,
+.activeToggle.active:hover {
+	background-color: #ffc107;
+	color:#000;
+}
+
+/* LIBRARY ITEMS */
+.libraryItem {
+	width: 33px;
+	height: 33px;
+}
+
+#library > a {
+	position: relative;
+	float: left;
+	margin: 2.5px;
+	color: #666;
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+#library > a > button {
+	display: none;
+	outline: none;
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	width: 16px;
+	font-size: 90%;
+	border-radius: 50%;
+	background: #444;
+}
+
+#library > a > span {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* Hover Effects */
+#library > a:hover > canvas{
+	background: #71accf;
+}
+
+#library > a:hover > button {
+	z-index: 1;
+	display: block;
+}
+#library > a > button:hover {
+	background: #eb590c;
+}
+#library > a > button:active:hover {
+	background: #a43e08;
+}
+
+
+/* Active Element */
+#library > a.selected,
+#library > a:hover > span {
+	color: white;
+}
+
+#library > a.selected > canvas {
+	background: #7ebfe7;
+}
+
+#library > a.selected:hover > canvas {
+	background: #71accf;
+}
+
+#library > a.selected:active > canvas,
+#library > a:active:focus > canvas {
+	background: #5885a1;
+}
+
+#library > a.deselected > canvas {
+	background: #424242;
+}
+
+/* ABOUT WINDOW */
+
+.blue 		{ color: #126898; font-weight: 400; }
+.lightBlue 	{ color: #7ebfe7; }
+.yellow 	{ color: #fdbf28; }
+.orange 	{ color: #eb590c; }
+
+#aboutPage, #configPage{
+	font-weight: 300;
+	font-size: 12px;
+	color: white;
+	width: 100%;
+	position: fixed;
+	z-index: 2;
+	top: 0;
+	background-color: #7ebfe7;
+	overflow-y: hidden;
+	-webkit-transition: 0.5s;
+	transition: 0.5s;
+}
+
+#configPage {
+	height: 0%;
+}
+
+	#about-top {
+		display: -webkit-flex;
+		-webkit-flex-flow: column;
+		-webkit-align-items: center;
+		-webkit-justify-content: center;
+		flex-flow: column;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		z-index: 1;
+		height: 80px;
+		font-size: 10px;
+	}
+
+	#about-container, #config-container {
+		display: -webkit-flex;
+		overflow: hidden;
+		height: 100vh;
+		margin-top: -130px;
+		padding-top: 130px;
+		position: relative;
+	}
+
+		#about-content, #config-content {
+			overflow: auto;
+			height: auto;
+			padding-left: 10px;
+			padding-right: 10px;
+			width: 100%;
+		}
+
+		#config-content {
+			padding-top: 10px;
+		}
+
+	#about-footer{
+		display: -webkit-flex;
+		height: 50px;
+		-webkit-align-items: center;
+		-webkit-justify-content: center;
+		align-items: center;
+		justify-content: center;
+		font-size: 10px;
+		overflow-y: hidden;
+		text-align: center;
+		background-color: #126898;
+	}
+
+		#about-footer a {
+			cursor:pointer;
+		}
+		#about-footer a:hover {
+			color: #126898;
+		}
+
+	/* STYLING ABOUT PAGE */
+	#aboutPage img, #configPage img {
+		vertical-align: top;
+		max-height: 35px;
+		margin-left: 5px;
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+
+	#aboutPage ::selection, #configPage ::selection {
+		color: white;
+		background-color: rgba(253, 191, 40,0.97);
+	}
+
+		#config-content .btn-default {
+			background-color: #424242;
+		}
+
+		#config-content .btn-default.active {
+			background-color: #ffc107;
+		}
+
+		#config-content label {
+			box-shadow: none;
+		}
+
+		#config-content select {
+			color: #424242;
+		}
+
+
+		#config-content input {
+			color: #424242;
+		}
+
+		#sliderDiv {
+		}
+
+.btnCloseAbout {
+	position: absolute;
+	cursor:pointer;
+	top: 4px;
+	left: 4px;
+}
+
+.btnCloseAbout:hover {
+	color: #126898;
+}
+
+
+
+.btn-group .btn + .btn, .btn-group .btn + .btn-group, .btn-group .btn-group + .btn, .btn-group .btn-group + .btn-group {
+	margin-left: inherit;
+}
+
+
+.nav-tabs {
+	border-bottom: 1px solid #126898;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+	color: #126898;
+	font-weight: bold;
+
+	border: 1px solid #126898;
+	border-bottom-color: transparent;
+	background-color: #7ebfe7;
+}
+
+.nav > li > a {
+	font-weight: bold;
+
+	padding: 3px 5px;
+}
+
+.nav-tabs > li > a:hover {
+	background-color: #126898;
+}
+
+.configGrp {
+	width: 100%;
+	padding: 10px 0px;
+}
+
+
+
+
+
+
+
+/* RIBBONS */
+
+.corner-ribbon{
+  width: 200px;
+  background: #7ebfe7;
+  position: fixed;
+  top: 25px;
+  left: -50px;
+  text-align: center;
+  line-height: 50px;
+  letter-spacing: 1px;
+  color: #006698;
+  transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+
+
+	line-height: 20px;
+	font-weight: bold;
+}
+
+/* Different positions */
+.corner-ribbon.top-left{
+  top: 25px;
+  left: -50px;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.corner-ribbon.top-right{
+  top: 25px;
+  right: -50px;
+  left: auto;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.corner-ribbon.bottom-left{
+  top: auto;
+  bottom: 25px;
+  left: -50px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.corner-ribbon.bottom-right{
+  top: auto;
+  right: -50px;
+  bottom: 35px;
+  left: auto;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}

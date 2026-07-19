@@ -1,0 +1,157 @@
+{
+  "Groups": [
+    {
+      "name": "Metadata",
+      "description": "General information about your Flow and AE installations.",
+      "reason": "We capture this info to know what version of AE we should support.",
+      "pageviews": [
+      ],
+      "events": [
+        {
+          "id": "AE Version",
+          "isSent": "when the panel loads",
+          "category": "metadata",
+          "action": "panelLoad",
+          "label": "aeVersion",
+          "value": "{VALUE}"
+        },
+        {
+          "id": "Flow Version",
+          "isSent": "when the panel loads",
+          "category": "metadata",
+          "action": "panelLoad",
+          "label": "flowVersion",
+          "value": "{VALUE}"
+        },
+        {
+          "id": "Flow License",
+          "isSent": "when licensing changes",
+          "category": "metadata",
+          "action": "licenseChange",
+          "label": "flowLicense",
+          "value": "{VALUE}"
+        }
+      ]
+    },
+    {
+      "name": "Usage Info",
+      "description": "Things like Flow layout, Bezier values used, whether you're applying as keys or expressions, ease direction, or current library.",
+      "reason": "We use this information to know how to prioritize feature development; is setting ease direction seful? What about 'vertical' layout? Etc.",
+      "events": [
+        {
+          "id": "Layout",
+          "isSent": "when a curve is applied",
+          "category": "usageInfo",
+          "action": "curveApplied",
+          "label": "flowLayout",
+          "value": "{VALUE}"
+        },
+        {
+          "id": "Bezier Values",
+          "isSent": "when a curve is applied",
+          "category": "usageInfo",
+          "action": "curveApplied",
+          "label": "bezierValues",
+          "value": "{VALUE}"
+        },
+        {
+          "id": "applyAs",
+          "isSent": "when a curve is applied",
+          "category": "usageInfo",
+          "action": "curveApplied",
+          "label": "applyAs",
+          "value": "{VALUE}"
+        },
+        {
+          "id": "easeDirection",
+          "isSent": "when a curve is applied",
+          "category": "usageInfo",
+          "action": "curveApplied",
+          "label": "easeDirection",
+          "value": "{VALUE}"
+        },
+        {
+          "id": "currentLibrary",
+          "isSent": "when a curve is applied",
+          "category": "usageInfo",
+          "action": "curveApplied",
+          "label": "currentLibrary",
+          "value": "{VALUE}"
+        },
+        {
+          "id": "Colour Theme",
+          "isSent": "when a curve is applied",
+          "category": "usageInfo",
+          "action": "curveApplied",
+          "label": "flowTheme",
+          "value": "{VALUE}"
+        }
+      ],
+      "pageviews": []
+    },
+    {
+      "name": "Button Clicks",
+      "description": "The number of times certain functions and buttons are clicked.",
+      "reason": "This gives us info on whether certain features are being used at all, so we know whether to enhance (or remove) specific features.",
+      "events": [
+        {
+          "id": "Config Opened",
+          "isSent": "when Config is opened",
+          "category": "button",
+          "action": "Config Opened",
+          "label": "configOpened",
+          "value": "1"
+        },
+        {
+          "id": "Read Values",
+          "isSent": "when Read Values is clicked",
+          "category": "button",
+          "action": "Read Values",
+          "label": "readValues",
+          "value": "1"
+        },
+        {
+          "id": "Edit Bezier Values",
+          "isSent": "when Edit Bezier Values is clicked",
+          "category": "button",
+          "action": "Edit Bezier Values",
+          "label": "editBezierValues",
+          "value": "1"
+        },
+        {
+          "id": "Save Curve",
+          "isSent": "when Save Curve is clicked",
+          "category": "button",
+          "action": "Save Curve",
+          "label": "saveCurve",
+          "value": "1"
+        },
+        {
+          "id": "Clear Library",
+          "isSent": "when Clear Library is clicked",
+          "category": "button",
+          "action": "Clear Library",
+          "label": "clearLibrary",
+          "value": "1"
+        },
+        {
+          "id": "Import Curves",
+          "isSent": "when Import Curves is clicked",
+          "category": "button",
+          "action": "Import Curves",
+          "label": "importCurves",
+          "value": "1"
+        },
+        {
+          "id": "Export Curves",
+          "isSent": "when Export Curves is clicked",
+          "category": "button",
+          "action": "Export Curves",
+          "label": "exportCurves",
+          "value": "1"
+        }
+      ],
+      "pageviews": []
+    }
+  ]
+}
