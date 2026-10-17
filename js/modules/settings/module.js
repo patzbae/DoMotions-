@@ -43,8 +43,8 @@
                     '<div class="dm-col">' +
                         '<div class="dm-row" style="display:flex;align-items:center;gap:8px;">' +
                             '<span>Accent Color:</span>' +
-                            '<div style="width: 12px; height: 12px; border-radius: 50%; background-color: ' + accentColor + '; border: 1px solid var(--border-color);"></div>' +
-                            '<span style="font-size: 11px; color: var(--text-secondary);">' + accentColor + '</span>' +
+                            '<input type="color" id="accent-color-picker" value="' + accentColor + '" style="cursor:pointer; width: 24px; height: 24px; border: none; padding: 0; background: none;">' +
+                            '<span id="accent-color-label" style="font-size: 11px; color: var(--text-secondary); font-family: monospace;">' + accentColor + '</span>' +
                         '</div>' +
                         '<div class="dm-row" style="margin-top: 8px;">' +
                             '<label style="display:flex; align-items:center; gap:8px; cursor:pointer;">' +
@@ -101,6 +101,13 @@
         container.innerHTML = html;
 
         // Listeners
+        container.querySelector('#accent-color-picker').addEventListener('input', function (e) {
+            var newColor = e.target.value;
+            document.getElementById('accent-color-label').innerText = newColor;
+            document.documentElement.style.setProperty('--accent-primary', newColor);
+            settings.set('general.accentColor', newColor);
+        });
+
         container.querySelector('#toggle-animations').addEventListener('change', function (e) {
             settings.set('ui.animationsEnabled', e.target.checked);
             DoMotions.UIManager.showStatus('Animations ' + (e.target.checked ? 'enabled' : 'disabled'), 'info');

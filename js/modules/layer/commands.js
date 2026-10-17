@@ -14,16 +14,6 @@
                 validate: function () { return true; }
             };
         },
-        createShapeLayer: function (params) {
-            return {
-                id: 'layer.createShapeLayer',
-                module: 'layer',
-                label: 'Create Shape Layer',
-                target: 'layer.createShapeLayer',
-                payload: params || {},
-                validate: function () { return true; }
-            };
-        },
         createSolid: function (params) {
             return {
                 id: 'layer.createSolid',
@@ -61,15 +51,6 @@
                 target: 'layer.renameSelected',
                 payload: params || { name: 'Renamed Layer' },
                 validate: function () { return !!params.name; }
-            };
-        },
-        createNullAtSelected: function () {
-            return {
-                id: 'layer.createNullAtSelected',
-                module: 'layer',
-                label: 'Create Null at Selected Layer',
-                target: 'layer.createNullAtSelected',
-                payload: {}
             };
         },
         parentToNull: function () {

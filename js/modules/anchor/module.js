@@ -59,6 +59,10 @@
                     .catch(function (err) {
                         var msg = (err && err.message) ? err.message : 'Error setting anchor';
                         DoMotions.UIManager.showStatus(msg, 'error', 15000);
+                        if (DoMotions.Notification) {
+                            var isUnsupported = (msg.indexOf('not supported') !== -1 || msg.indexOf('tidak didukung') !== -1 || msg.indexOf('tidak tersedia') !== -1);
+                            DoMotions.Notification.error(msg, isUnsupported ? { title: 'Unsupported Layer' } : undefined);
+                        }
                     });
             });
         }
@@ -74,6 +78,10 @@
                 .catch(function (err) {
                     var msg = (err && err.message) ? err.message : 'Error centering anchor';
                     DoMotions.UIManager.showStatus(msg, 'error', 15000);
+                    if (DoMotions.Notification) {
+                        var isUnsupported = (msg.indexOf('not supported') !== -1 || msg.indexOf('tidak didukung') !== -1 || msg.indexOf('tidak tersedia') !== -1);
+                        DoMotions.Notification.error(msg, isUnsupported ? { title: 'Unsupported Layer' } : undefined);
+                    }
                 });
         });
     };

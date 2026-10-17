@@ -45,7 +45,7 @@
         // anchorPoint.value and sourceRectAtTime. Match its length to the layer.
         var oldA = layer.anchorPoint.value;
         var newA = is3D ? [newAnchor[0], newAnchor[1], (newAnchor[2] || 0)]
-                        : [newAnchor[0], newAnchor[1]];
+            : [newAnchor[0], newAnchor[1]];
 
         var pos = _readPosition(layer, is3D);
 
@@ -65,7 +65,7 @@
             // Cancel that shift via Position so the layer stays visually put.
             // Handles scale, rotation and parenting for the comp (screen) plane.
             var newPos = is3D ? [pos[0] - dx, pos[1] - dy, pos[2]]
-                              : [pos[0] - dx, pos[1] - dy];
+                : [pos[0] - dx, pos[1] - dy];
             _applyPosition(layer, time, is3D, newPos);
         } else {
             // Fallback for pre-2020: compensate using the layer's own scale + 2D
@@ -79,7 +79,7 @@
             var pdx = scx * c - scy * sn;
             var pdy = scx * sn + scy * c;
             var newPos2 = is3D ? [pos[0] + pdx, pos[1] + pdy, pos[2]]
-                               : [pos[0] + pdx, pos[1] + pdy];
+                : [pos[0] + pdx, pos[1] + pdy];
             _applyAnchor(layer, time, newA);
             _applyPosition(layer, time, is3D, newPos2);
         }
@@ -88,7 +88,7 @@
     function _getNewAnchorForPosition(layer, positionStr) {
         var comp = layer.containingComp;
         var x = 0, y = 0, w = 0, h = 0;
-        
+
         // Use sourceRectAtTime if available (Text, Shape, Solids, Precomps)
         if (typeof layer.sourceRectAtTime === 'function') {
             try {
@@ -97,9 +97,14 @@
                 y = rect.top;
                 w = rect.width;
                 h = rect.height;
-            } catch(e) {}
+            } catch (e) {
+                throw new Error(
+                    "Anchor: failed reading sourceRectAtTime to layer '" +
+                    layer.name + "': " + e.message
+                );
+            }
         }
-        
+
         var ax = x, ay = y;
         switch (positionStr) {
             case 'TL': ax = x; ay = y; break;
@@ -113,9 +118,25 @@
             case 'BR': ax = x + w; ay = y + h; break;
             default: ax = x + w / 2; ay = y + h / 2; break;
         }
-        
+
         var currentZ = layer.anchorPoint.value.length > 2 ? layer.anchorPoint.value[2] : 0;
         return [ax, ay, currentZ];
+    }
+
+    function _isUnsupportedLayer(layer) {
+        if (!layer) return false;
+        if (typeof CameraLayer !== 'undefined' && layer instanceof CameraLayer) return true;
+        if (typeof LightLayer !== 'undefined' && layer instanceof LightLayer) return true;
+        if (layer.matchName && (layer.matchName === 'ADBE Camera Layer' || layer.matchName === 'ADBE Light Layer')) return true;
+        return false;
+    }
+
+    function _validateSupportedLayers(layers) {
+        for (var i = 0; i < layers.length; i++) {
+            if (_isUnsupportedLayer(layers[i])) {
+                throw new Error("Anchor Point not supported to this layer.");
+            }
+        }
     }
 
     // 1. Set Position (Grid)
@@ -123,12 +144,16 @@
         return $.DoMotions.utils.undoGroup('Set Anchor Point', function () {
             var layers = $.DoMotions.utils.getSelectedLayers();
             var posStr = params.position || 'MC';
-            
+
+            // Reject operation immediately if any layer is unsupported to prevent partial execution
+            _validateSupportedLayers(layers);
+
             for (var i = 0; i < layers.length; i++) {
-                var newA = _getNewAnchorForPosition(layers[i], posStr);
-                _moveAnchor(layers[i], newA);
+                var layer = layers[i];
+                var newA = _getNewAnchorForPosition(layer, posStr);
+                _moveAnchor(layer, newA);
             }
-            
+
             return {
                 affectedLayers: layers.length,
                 message: 'Anchor set to ' + posStr
@@ -140,12 +165,16 @@
     $.DoMotions.modules.anchor.centerToContent = function (params) {
         return $.DoMotions.utils.undoGroup('Center Anchor to Content', function () {
             var layers = $.DoMotions.utils.getSelectedLayers();
-            
+
+            // Reject operation immediately if any layer is unsupported to prevent partial execution
+            _validateSupportedLayers(layers);
+
             for (var i = 0; i < layers.length; i++) {
-                var newA = _getNewAnchorForPosition(layers[i], 'MC');
-                _moveAnchor(layers[i], newA);
+                var layerC = layers[i];
+                var newA = _getNewAnchorForPosition(layerC, 'MC');
+                _moveAnchor(layerC, newA);
             }
-            
+
             return {
                 affectedLayers: layers.length,
                 message: 'Centered anchor to content'
@@ -156,6 +185,9 @@
     // 3. Get Current Position
     $.DoMotions.modules.anchor.getCurrentPosition = function (params) {
         var layers = $.DoMotions.utils.getSelectedLayers();
+        if (_isUnsupportedLayer(layers[0])) {
+            throw new Error("Anchor Point not supported to this layer.");
+        }
         var a = layers[0].anchorPoint.value;
         return {
             x: a[0],

@@ -39,10 +39,11 @@
 
                 // ── 6. Context object ───────────────────────────
                 var context = {
-                    settings:   DoMotions.SettingsManager,
-                    commandBus: DoMotions.CommandBus,
-                    bridge:     DoMotions.Bridge,
-                    icons:      DoMotions.IconManager
+                    settings:     DoMotions.SettingsManager,
+                    commandBus:   DoMotions.CommandBus,
+                    bridge:       DoMotions.Bridge,
+                    icons:        DoMotions.IconManager,
+                    notification: DoMotions.Notification
                 };
 
                 // ── 7. Initialize all registered modules ────────

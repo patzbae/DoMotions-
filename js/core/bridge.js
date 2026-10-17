@@ -133,7 +133,10 @@
                             if (parsed.success) {
                                 resolve(parsed);
                             } else {
-                                reject(new Error(parsed.error || 'Unknown ExtendScript error'));
+                                var err = new Error(parsed.error || 'Unknown ExtendScript error');
+                                if (parsed.module)        { err.module = parsed.module; }
+                                if (parsed.function_name) { err.function_name = parsed.function_name; }
+                                reject(err);
                             }
                         } else {
                             // Fallback if raw value returned

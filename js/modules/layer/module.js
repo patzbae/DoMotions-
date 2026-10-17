@@ -20,13 +20,11 @@
             '<div class="module-content">' +
                 '<section class="dm-section">' +
                     '<div class="dm-section-title">Create Layer</div>' +
-                    '<div class="dm-btn-group" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">' +
-                        '<button class="dm-btn" style="flex: 1 1 45%;" id="create-null">' + icons.get('layer', {size:'14px'}) + ' Null</button>' +
-                        '<button class="dm-btn" style="flex: 1 1 45%;" id="create-solid">' + icons.get('layer', {size:'14px'}) + ' Solid</button>' +
-                        '<button class="dm-btn" style="flex: 1 1 45%;" id="create-shape">' + icons.get('layer', {size:'14px'}) + ' Shape</button>' +
-                        '<button class="dm-btn" style="flex: 1 1 45%;" id="create-adj">' + icons.get('layer', {size:'14px'}) + ' Adj</button>' +
+                    '<div class="dm-btn-group" style="display:flex; gap:4px;">' +
+                        '<button class="dm-btn" style="flex: 1;" id="create-null" data-tooltip="Create Null (normal or for selected)">' + icons.get('layer', {size:'14px'}) + ' Null</button>' +
+                        '<button class="dm-btn" style="flex: 1;" id="create-solid" data-tooltip="Create Solid Layer">' + icons.get('layer', {size:'14px'}) + ' Solid</button>' +
+                        '<button class="dm-btn" style="flex: 1;" id="create-adj" data-tooltip="Create Adjustment Layer">' + icons.get('layer', {size:'14px'}) + ' Adj</button>' +
                     '</div>' +
-                    '<button class="dm-btn" id="null-selected" style="width: 100%;" data-tooltip="Create Null at Selected Layers">' + icons.get('layer', {size:'14px'}) + ' Null at Selected</button>' +
                 '</section>' +
 
                 '<section class="dm-section">' +
@@ -51,9 +49,18 @@
 
         // Creation Listeners
         container.querySelector('#create-null').addEventListener('click', function () {
-            self._context.commandBus.dispatch(DoMotions.Commands.Layer.createNull({ atCenter: true }))
-                .then(function (res) { DoMotions.UIManager.showStatus((res && res.data && res.data.message) ? res.data.message : 'Created null object', 'success'); })
-                .catch(function (err) { DoMotions.UIManager.showStatus('Error creating null', 'error'); });
+            self._context.commandBus.dispatch(DoMotions.Commands.Layer.createNull())
+                .then(function (res) {
+                    var msg = (res && res.data && res.data.message) ? res.data.message : 'Created Null';
+                    DoMotions.UIManager.showStatus(msg, 'success');
+                })
+                .catch(function (err) {
+                    var msg = (err && err.message) ? err.message : 'Error creating Null';
+                    DoMotions.UIManager.showStatus(msg, 'error');
+                    if (DoMotions.Notification) {
+                        DoMotions.Notification.error(msg);
+                    }
+                });
         });
         
         container.querySelector('#create-solid').addEventListener('click', function () {
@@ -62,22 +69,10 @@
                 .catch(function (err) { DoMotions.UIManager.showStatus('Error creating Solid', 'error'); });
         });
 
-        container.querySelector('#create-shape').addEventListener('click', function () {
-            self._context.commandBus.dispatch(DoMotions.Commands.Layer.createShapeLayer())
-                .then(function (res) { DoMotions.UIManager.showStatus((res && res.data && res.data.message) ? res.data.message : 'Created Shape Layer', 'success'); })
-                .catch(function (err) { DoMotions.UIManager.showStatus('Error creating Shape Layer', 'error'); });
-        });
-
         container.querySelector('#create-adj').addEventListener('click', function () {
             self._context.commandBus.dispatch(DoMotions.Commands.Layer.createAdjustmentLayer())
                 .then(function (res) { DoMotions.UIManager.showStatus((res && res.data && res.data.message) ? res.data.message : 'Created Adjustment Layer', 'success'); })
                 .catch(function (err) { DoMotions.UIManager.showStatus('Error creating Adjustment Layer', 'error'); });
-        });
-
-        container.querySelector('#null-selected').addEventListener('click', function () {
-            self._context.commandBus.dispatch(DoMotions.Commands.Layer.createNullAtSelected())
-                .then(function (res) { DoMotions.UIManager.showStatus((res && res.data && res.data.message) ? res.data.message : 'Created null at selection', 'success'); })
-                .catch(function (err) { DoMotions.UIManager.showStatus('Error creating null at selection', 'error'); });
         });
 
         // Utilities Listeners

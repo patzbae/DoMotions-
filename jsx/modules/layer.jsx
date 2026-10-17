@@ -9,25 +9,79 @@
         return nullLayer;
     }
 
-    // 1. Create Null Object
+    // 1. Create Null Object (Smart behavior: normal null if no selection, or parented null for each selected layer)
     $.DoMotions.modules.layer.createNull = function (params) {
-        return $.DoMotions.utils.undoGroup('Create Null Object', function () {
+        return $.DoMotions.utils.undoGroup('Create Null', function () {
             var comp = $.DoMotions.utils.getActiveComp();
-            var nullLayer = _createNull(comp, params.name || 'Null');
-            if (params.atCenter) {
-                nullLayer.position.setValue([comp.width / 2, comp.height / 2]);
-            }
-            return { affectedLayers: 1, message: 'Created Null Object' };
-        });
-    };
+            var selected = comp.selectedLayers;
 
-    // 2. Create Shape Layer
-    $.DoMotions.modules.layer.createShapeLayer = function (params) {
-        return $.DoMotions.utils.undoGroup('Create Shape Layer', function () {
-            var comp = $.DoMotions.utils.getActiveComp();
-            var shapeLayer = comp.layers.addShape();
-            if (params.name) shapeLayer.name = params.name;
-            return { affectedLayers: 1, message: 'Created Shape Layer' };
+            // Scenario A: No layers selected -> create single default null at comp center
+            if (!selected || selected.length === 0) {
+                var singleNull = _createNull(comp, (params && params.name) ? params.name : 'Null');
+                singleNull.position.setValue([comp.width / 2, comp.height / 2]);
+                return {
+                    affectedLayers: 1,
+                    message: 'Created Null Object'
+                };
+            }
+
+            // Scenario B: One or more layers selected -> create parented null for each selected layer
+            // Snapshot selected layers into an array because adding layers alters comp.selectedLayers
+            var targets = [];
+            for (var i = 0; i < selected.length; i++) {
+                targets.push(selected[i]);
+            }
+
+            var createdNulls = [];
+            for (var j = 0; j < targets.length; j++) {
+                var targetLayer = targets[j];
+                var nullName = (params && params.name) ? (params.name + ' for ' + targetLayer.name) : ('Null for ' + targetLayer.name);
+                var nullLayer = _createNull(comp, nullName);
+
+                // Match 3D status of target layer
+                if (targetLayer.threeDLayer) {
+                    nullLayer.threeDLayer = true;
+                }
+
+                // Place Null directly above target layer on timeline
+                nullLayer.moveBefore(targetLayer);
+
+                // Synchronize duration: match inPoint and outPoint with parent layer
+                var inP = targetLayer.inPoint;
+                var outP = targetLayer.outPoint;
+                if (inP > nullLayer.outPoint) {
+                    nullLayer.outPoint = outP;
+                    nullLayer.inPoint = inP;
+                } else {
+                    nullLayer.inPoint = inP;
+                    nullLayer.outPoint = outP;
+                }
+
+                // Parent Null to target layer (Null becomes child, targetLayer becomes parent)
+                nullLayer.parent = targetLayer;
+
+                // Align Null position with parent layer origin in parent local coordinate space
+                if (nullLayer.threeDLayer) {
+                    nullLayer.position.setValue([0, 0, 0]);
+                } else {
+                    nullLayer.position.setValue([0, 0]);
+                }
+
+                createdNulls.push(nullLayer);
+            }
+
+            // Deselect original layers and select newly created nulls
+            for (var d = 0; d < targets.length; d++) {
+                targets[d].selected = false;
+            }
+            for (var s = 0; s < createdNulls.length; s++) {
+                createdNulls[s].selected = true;
+            }
+
+            return {
+                affectedLayers: createdNulls.length,
+                message: 'Created ' + createdNulls.length + ' Null(s) for selected layer(s)'
+            };
         });
     };
 
@@ -108,30 +162,7 @@
         });
     };
 
-    // 8. Create Null at Selected Layers
-    $.DoMotions.modules.layer.createNullAtSelected = function (params) {
-        return $.DoMotions.utils.undoGroup('Create Null at Selected', function () {
-            var comp = $.DoMotions.utils.getActiveComp();
-            var layers = $.DoMotions.utils.getSelectedLayers();
-            for (var i = 0; i < layers.length; i++) {
-                var layer = layers[i];
-                var pos = layer.position.value;               // 2 elems (2D) or 3 elems (3D)
-                var nullLayer = _createNull(comp, 'Null for ' + layer.name);
-                // addNull() always creates a 2D null. Match its dimensionality to
-                // the source layer so setValue() gets a correctly-sized array.
-                if (layer.threeDLayer) {
-                    nullLayer.threeDLayer = true;
-                    nullLayer.position.setValue([pos[0], pos[1], (pos[2] || 0)]);
-                } else {
-                    nullLayer.position.setValue([pos[0], pos[1]]);
-                }
-                nullLayer.moveBefore(layer);
-            }
-            return { affectedLayers: layers.length, message: 'Created ' + layers.length + ' Null(s)' };
-        });
-    };
-
-    // 9. Select Similar Layers
+    // 8. Select Similar Layers
     $.DoMotions.modules.layer.selectSimilar = function (params) {
         return $.DoMotions.utils.undoGroup('Select Similar Layers', function () {
             var comp = $.DoMotions.utils.getActiveComp();

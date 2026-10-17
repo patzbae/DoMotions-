@@ -62,8 +62,8 @@ Arsitektur lengkap: lihat `docs/Architecture.md` dan `docs/Modules.md`.
 Kelas bug: mengirim array dengan **jumlah elemen salah** ke API AE.
 
 - **Easing — FIXED.** Ukuran array temporal-ease harus dari `propertyValueType`, bukan `value.length`. Ditambah util `$.DoMotions.utils.getEaseDimensions(prop)` di `jsx/modules/utils.jsx` (spatial/OneD → 1, TwoD → 2, ThreeD → 3), dipakai di `applyEase`. Mengatasi error `setTemporalEaseAtKey ... does not have 1 elements` pada Position dsb.
-- **Layer — FIXED.** `createNullAtSelected` dulu `setValue(pos)` dengan `pos` 3-elemen (layer 3D) ke Null 2D → crash. Kini Null dibuat 3D bila layer sumbernya 3D, dan posisi diset dengan dimensi yang cocok.
-- **Anchor — ATTEMPTED, MASIH ERROR.** Lihat §5.
+- **Layer — UPDATED (Smart Null).** Tombol "Null at Selected" digabungkan ke tombol "Null". Jika ada layer terpilih, tombol Null membuat Null parented di atas masing-masing layer dengan durasi inPoint/outPoint sesuai parent; jika tidak ada seleksi, membuat satu Null biasa di tengah comp.
+- **Anchor — COMPLETE / FIXED (Milestone 6B).** Menggunakan `sourcePointToComp` dengan teknik measure-shift. Dilengkapi pre-validasi untuk Camera & Light layer ("Anchor Point tidak didukung untuk layer ini.") tanpa proses parsial pada mixed selection. Algoritma transform inti dipertahankan utuh.
 
 ---
 
@@ -72,21 +72,26 @@ Kelas bug: mengirim array dengan **jumlah elemen salah** ke API AE.
 | Modul | order | Status | Backend JSX |
 |---|---|---|---|
 | Layers | 10 | ✅ Berfungsi | `jsx/modules/layer.jsx` |
-| Graph | 20 | 🚧 Placeholder | — |
+| Graph | 20 | ✅ Berfungsi | `jsx/modules/graph.jsx` |
 | Easing | 30 | ✅ Berfungsi (dimensi fixed) | `jsx/modules/easing.jsx` |
-| **Anchor** | 40 | ✅ Berfungsi | `jsx/modules/anchor.jsx` |
+| **Anchor** | 40 | ✅ Berfungsi (Milestone 6B: COMPLETE / FIXED) | `jsx/modules/anchor.jsx` |
 | Text | 50 | 🚧 Placeholder | — |
 | Utils | 60 | 🚧 Placeholder | — |
-| **Graph** | 20 | ✅ Berfungsi | `jsx/modules/graph.jsx` |
 | Settings | 70 | ✅ Berfungsi | — (baca version.json) |
 
 ---
 
-## 5. Anchor Point — RESOLVED ✅
+## 5. Anchor Point (Milestone 6B: COMPLETE / FIXED) ✅
 
 **Akar masalah (penting untuk dipahami):** kode anchor lama memakai `layer.toWorld()` / `fromWorld()` / `toWorldVec()`. **Metode-metode itu hanya ada di bahasa EKSPRESI After Effects, bukan di DOM scripting (ExtendScript).** Jadi lewat panel CEP mereka selalu `undefined` → "Error setting anchor". Ini pelajaran penting: **jangan pakai `toWorld/toComp/*Vec` di ExtendScript.**
 
-**Solusi:** `_moveAnchor` ditulis ulang memakai **`AVLayer.sourcePointToComp()`** (metode scripting resmi, AE 17.0/2020+) dengan teknik *measure-shift*: ukur posisi comp titik konten target sebelum & sesudah anchor dipindah, lalu batalkan geseran itu lewat Position. Menangani scale, rotasi, parent, 2D/3D, dan Position dimensi terpisah. Ada fallback manual (scale + rotasi 2D) untuk pra-2020. **Dikonfirmasi berfungsi normal oleh user.**
+**Solusi:** `_moveAnchor` ditulis ulang memakai **`AVLayer.sourcePointToComp()`** (metode scripting resmi, AE 17.0/2020+) dengan teknik *measure-shift*: ukur posisi comp titik konten target sebelum & sesudah anchor dipindah, lalu batalkan geseran itu lewat Position. Menangani scale, rotasi, parent, 2D/3D, dan Position dimensi terpisah. Ada fallback manual (scale + rotasi 2D) untuk pra-2020.
+
+**Klarifikasi Perilaku Camera & Light Layers:** Camera dan Light layers secara definitif diperlakukan sebagai layer yang **tidak didukung** (unsupported layer types) untuk operasi Anchor Point. Bila user memilih Camera atau Light (termasuk pada seleksi campuran/mixed selection bersama layer yang didukung):
+- Operasi langsung dihentikan sebelum layer mana pun dimodifikasi (menolak partial execution).
+- Ditampilkan notifikasi user-facing yang jelas: `"Anchor Point tidak didukung untuk layer ini."`.
+- Arsitektur undoGroup tetap terjaga bersih tanpa modifikasi layer.
+- Seluruh algoritma transform calculation dan handling layer yang didukung (Shape, Solid, Text, Adjustment, Null) tetap 100% utuh tanpa modifikasi.
 
 **Gotcha reload yang ikut diperbaiki:** `jsx/hostscript.jsx` dulu punya guard `if (typeof $.DoMotions === 'undefined')`. Karena engine ExtendScript persist selama AE hidup, edit `.jsx` tidak termuat sampai AE di-restart. Guard dihapus → host **selalu reload**, jadi reload panel cukup untuk memuat perubahan `.jsx`.
 
@@ -95,7 +100,7 @@ Kelas bug: mengirim array dengan **jumlah elemen salah** ke API AE.
 ## 6. Backlog / Next Steps (disarankan, urut prioritas)
 
 1. **[P1] Verifikasi runtime menyeluruh di AE** — Anchor ✅, Easing ✅, **Graph** ✅ sudah diuji & dikonfirmasi user (kurva mengikuti tanpa overshoot). Layer belum diuji tuntas di AE.
-2. **[P2] Nuansa parent-space (Layer)** — `createNullAtSelected` & `parentToNull` memakai `position.value` (parent space) tapi menaruh Null di comp space; meleset bila layer sumber sudah punya parent. Perbaiki dengan `sourcePointToComp` (BUKAN toWorld — lihat pelajaran di §5). Bukan crash, hanya penempatan.
+2. **[P2] Nuansa parent-space (Layer)** — `parentToNull` memakai `position.value` (parent space) tapi menaruh Null di comp space; meleset bila layer sumber sudah punya parent. Perbaiki dengan `sourcePointToComp` (BUKAN toWorld — lihat pelajaran di §5). Bukan crash, hanya penempatan.
 3. **[P3] Modul placeholder tersisa** — Text Animator, Utilities (lihat `docs/Roadmap.md` Milestone 4). Graph sudah ✅.
 4. **[P3] Graph — peningkatan** — belum ada: overshoot (butuh keyframe tambahan, temporal ease murni tak bisa overshoot), input numerik manual untuk 4 nilai bezier, simpan preset kustom. Speed dihitung dari magnitudo Δvalue dan dipakai sama untuk semua dimensi (cukup untuk mayoritas kasus).
 5. **[P3] Ikon tema light** — `icons/light/` masih kosong; IconManager fallback ke karakter Unicode. Isi bila mau dukung tema light.
@@ -127,12 +132,13 @@ js/core/command-bus.js        # dispatch command + lifecycle events
 js/core/registry.js           # katalog & lifecycle modul
 js/core/settings-manager.js   # settings berlapis + helper _readJSON (XHR)
 js/core/ui.js                 # accordion + status bar
+js/core/notification.js       # global toast notification system
 js/core/icon-manager.js       # SVG themed + fallback
 js/main.js                    # bootstrap
 jsx/hostscript.jsx            # entry ExtendScript + dispatcher
 jsx/modules/utils.jsx         # helper (undoGroup, seleksi, getEaseDimensions)
 jsx/modules/easing.jsx        # ✅ backend easing
-jsx/modules/anchor.jsx        # ⚠️ backend anchor (bug terbuka)
+jsx/modules/anchor.jsx        # ✅ backend anchor (Milestone 6B: COMPLETE / FIXED)
 jsx/modules/layer.jsx         # ✅ backend layer
 ```
 
