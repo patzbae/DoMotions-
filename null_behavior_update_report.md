@@ -3,12 +3,20 @@
 **Dokumen:** `null_behavior_update_report.md`  
 **Proyek:** DoMotions v0.1 — CEP Extension for Adobe After Effects  
 **Modul:** Layers Module  
-**Status:** IMPLEMENTED (Static Validation Complete)
+**Status:** IMPLEMENTED (Static Validation & Hierarchy Correction Complete)
 
 ---
 
 ## 1. Status Implementasi
-Pembaruan behavior tombol **Null** dan penghapusan tombol **Null at Selected** telah berhasil diimplementasikan secara bersih tanpa meninggalkan *dead code* atau dependensi rusak.
+Pembaruan behavior tombol **Null** telah disesuaikan dengan koreksi hierarki controller:
+- **Null menjadi PARENT**
+- **Selected Layer menjadi CHILD**
+- Struktur hierarchy:
+  ```
+  Null
+  └── Selected Layer
+  ```
+- Tidak ada auto-parenting untuk Solid Layer dan Adjustment Layer (`parent == null`).
 
 ---
 
@@ -19,10 +27,18 @@ Pembaruan behavior tombol **Null** dan penghapusan tombol **Null at Selected** t
 
 ## 3. File yang Diubah
 1. `jsx/modules/layer.jsx`:
-   - Menulis ulang `$.DoMotions.modules.layer.createNull` agar cerdas mendeteksi konteks seleksi:
-     - Jika tidak ada layer yang dipilih: membuat 1 Null Object standar di tengah komposisi (`[comp.width/2, comp.height/2]`).
-     - Jika terdapat satu atau lebih layer yang dipilih: membuat Null Object khusus untuk setiap layer terpilih, memindahkannya tepat di atas layer bersangkutan (`moveBefore`), menyamakan `inPoint` dan `outPoint`, mem-parent Null ke layer tersebut, dan menyelaraskan posisi lokal Null ke `[0, 0]` (atau `[0, 0, 0]` bila 3D).
-   - Menghapus fungsi `$.DoMotions.modules.layer.createNullAtSelected` yang sudah usang.
+   - Menulis ulang fungsi `$.DoMotions.modules.layer.createNull`:
+     - **Tanpa Seleksi:** Membuat 1 Null Object standar di tengah komposisi (`[comp.width/2, comp.height/2]`) dengan durasi penuh comp dan label hijau (`label = 9`).
+     - **Dengan Seleksi (≥ 1 Layer):**
+       - Mengiterasi seluruh layer yang sedang dipilih (disnapshot terlebih dahulu).
+       - Untuk setiap layer terpilih, dibuatkan satu Null Object khusus (`"Null for <Layer Name>"`).
+       - Menyesuaikan 3D status jika layer target adalah 3D.
+       - Menempatkan Null tepat di atas layer terpilih di Timeline (`moveBefore`).
+       - Menyelaraskan frame range (`inPoint` dan `outPoint`) persis dengan layer terpilih menggunakan safe ordering.
+       - Menempatkan posisi Null tepat pada posisi comp layer terpilih (`_getLayerCompPosition`).
+       - **Menjadikan Selected Layer sebagai CHILD dari Null (`selectedLayer.parent = nullLayer`)**.
+       - Menjaga `nullLayer.parent == null` sehingga Null berfungsi sebagai controller utama.
+   - Menambahkan helper `_readLayerPosition` (aman untuk dimensi terpisah / separated dimensions) dan `_getLayerCompPosition` (mengonversi posisi anchor target ke koordinat comp bila memiliki parent sebelumnya).
 2. `js/modules/layer/commands.js`:
    - Menghapus command definition `createNullAtSelected`.
    - Mempertahankan `createNull` sebagai command tunggal pembuatan Null.
@@ -30,38 +46,41 @@ Pembaruan behavior tombol **Null** dan penghapusan tombol **Null at Selected** t
    - Menghapus elemen tombol `#null-selected` dari template HTML.
    - Mengubah layout grup tombol `Create Layer` menjadi 3 kolom rapi (`Null`, `Solid`, `Adj`).
    - Menghapus event listener klik untuk `#null-selected`.
-   - Memperbarui event listener `#create-null` agar mendispatch `createNull()` dan menampilkan notifikasi toast jika terjadi error.
-4. `ACTIVITY-REPORT.md`:
-   - Memperbarui catatan riwayat perubahan Layers Module dan membersihkan referensi *backlog*.
+   - Memperbarui event listener `#create-null` agar mendispatch `createNull()`.
 
 ---
 
-## 4. Tombol / UI yang Dihapus
-- **Tombol:** `"Null at Selected"` (`<button id="null-selected">`).
-- **DOM ID Terkait:** `#null-selected`.
-- **Command:** `layer.createNullAtSelected`.
-- **Backend Function:** `$.DoMotions.modules.layer.createNullAtSelected`.
-
----
-
-## 5. Behavior Baru Tombol "Null"
+## 4. Behavior Baru Tombol "Null"
 - **Kondisi Tanpa Seleksi (0 Layer):**
-  - Membuat satu Null Object normal berdurasi penuh komposisi di posisi tengah layar (`comp.width / 2`, `comp.height / 2`).
+  - Membuat satu Null Object normal berdurasi penuh komposisi di posisi tengah layar (`comp.width / 2`, `comp.height / 2`), `label = 9` (Hijau).
+  - Tidak ada parenting yang dilakukan.
 - **Kondisi Ada Seleksi (≥ 1 Layer):**
-  - Mengiterasi seluruh layer yang sedang dipilih (disnapshot terlebih dahulu agar penambahan layer baru tidak merusak array seleksi).
-  - Untuk setiap layer terpilih, dibuatkan satu Null Object khusus (`"Null for <Layer Name>"`).
-  - Null Object baru otomatis mewarisi dimensi 3D jika layer sumber merupakan layer 3D (`threeDLayer = true`).
+  - Untuk setiap layer terpilih, dibuatkan satu Null Object controller di atas layer bersangkutan.
+  - Null Object mewarisi dimensi 3D jika layer sumber merupakan layer 3D (`threeDLayer = true`).
+  - Null Object mewarisi label hijau (`label = 9`).
 
 ---
 
-## 6. Behavior Parenting
-- **Arah Hierarki:** `nullLayer.parent = targetLayer` (Null menjadi child dari target layer).
-- **Stabilitas Transform Parent:** Karena target layer bertindak sebagai *parent*, seluruh transform milik target layer (Position, Anchor Point, Scale, Rotation, Opacity, serta keyframe yang ada) **sama sekali tidak disentuh atau dimodifikasi**.
-- **Posisi Null:** Null ditempatkan pada posisi `[0, 0]` (atau `[0, 0, 0]` bila 3D) dalam ruang koordinat lokal parent, sehingga titik pusat controller Null tepat berimpit dengan Anchor Point / origin visual layer parent.
+## 5. Behavior Parenting & Hierarki Controller
+- **Arah Hierarki:**
+  ```
+  Null (PARENT)
+  └── Selected Layer (CHILD)
+  ```
+  Secara ExtendScript:
+  ```javascript
+  selectedLayer.parent = nullLayer;
+  nullLayer.parent = null;
+  ```
+- **Tujuan Parenting:**
+  Null bertindak sebagai controller bagi selected layer. Ketika Null digerakkan, dirotasi, atau diskalakan, selected layer akan mengikuti transformasi Null tersebut.
+- **Posisi Null & Stabilitas Visual:**
+  Null diposisikan pada posisi koordinat comp layer terpilih sebelum proses parenting dilakukan (`nullLayer.position.setValue(compPos)`).
+  Dengan cara ini, ketika `selectedLayer.parent = nullLayer` dieksekusi, After Effects secara otomatis menyesuaikan koordinat lokal selected layer tanpa menimbulkan lompatan atau pergeseran posisi visual di viewport.
 
 ---
 
-## 7. Behavior inPoint / outPoint
+## 6. Behavior inPoint / outPoint
 - Durasi Null secara presisi mengikuti rentang waktu aktif layer target:
   ```javascript
   var inP = targetLayer.inPoint;
@@ -74,69 +93,71 @@ Pembaruan behavior tombol **Null** dan penghapusan tombol **Null at Selected** t
       nullLayer.outPoint = outP;
   }
   ```
-- Null tidak lagi selalu berdurasi penuh komposisi jika layer target hanya aktif pada sebagian durasi timeline.
-- Penanganan urutan assignment memastikan tidak terjadi error clamping batas waktu pada After Effects API.
+- Null tidak aktif di luar rentang durasi layer target (mengikuti batas in/out secara presisi).
+- Penanganan urutan assignment mencegah error *time-clamp* pada API After Effects.
 
 ---
 
-## 8. Behavior Multiple Selection
-- Bila user memilih beberapa layer (misal Layer A, Layer B, Layer C):
-  - Dihasilkan 3 Null terpisah:
-    - `Null for Layer A` → Parent: Layer A (inPoint/outPoint mengikuti Layer A)
-    - `Null for Layer B` → Parent: Layer B (inPoint/outPoint mengikuti Layer B)
-    - `Null for Layer C` → Parent: Layer C (inPoint/outPoint mengikuti Layer C)
-- Seluruh Null dibuat dalam satu eksekusi tunggal.
+## 7. Behavior Multiple Selection
+Bila user memilih beberapa layer (misal: Layer A, Layer B, Layer C) lalu menekan "Null":
+- Dihasilkan satu Null untuk masing-masing layer:
+  ```
+  Null for Layer A
+  └── Layer A
+
+  Null for Layer B
+  └── Layer B
+
+  Null for Layer C
+  └── Layer C
+  ```
+- Setiap Null:
+  - Berada tepat di atas layer pasangannya pada timeline.
+  - Menjadi parent bagi layer pasangannya.
+  - Mengikuti `inPoint` dan `outPoint` layer pasangannya.
+  - Memiliki `label = 9` (Hijau).
+  - Memiliki `nullLayer.parent == null`.
 
 ---
 
-## 9. Behavior Layer Ordering
-- Setiap Null ditempatkan tepat di atas layer parent-nya pada timeline menggunakan:
-  ```javascript
-  nullLayer.moveBefore(targetLayer);
-  ```
-- Urutan timeline tetap terstruktur rapi:
-  ```
-  [Null for Layer A]
-  [Layer A]
-  [Null for Layer B]
-  [Layer B]
-  ...
-  ```
+## 8. Perbedaan Parenting Null vs Solid & Adjustment
+- **Null:** Melakukan parenting controller (`selectedLayer.parent = nullLayer`).
+- **Solid Layer:** **TIDAK** ada parenting (`solid.parent == null`).
+- **Adjustment Layer:** **TIDAK** ada parenting (`adj.parent == null`).
 
 ---
 
-## 10. Hasil Test (T01 - T09)
+## 9. Hasil Pengujian Khusus Parenting & Behavior (T01 - T07)
 
-| Test ID | Skenario Uji | Status Verifikasi Kode / Logika |
-|---|---|---|
-| **T01** | Tidak ada layer dipilih → klik Null | **LOGIC VERIFIED** — Masuk ke Scenario A: membuat 1 Null normal di `[width/2, height/2]`. |
-| **T02** | 1 layer dipilih → klik Null | **LOGIC VERIFIED** — Membuat 1 Null tepat di atas layer, `null.parent = layer`, `pos = [0,0]`, in/outPoint sinkron. |
-| **T03** | Layer hanya aktif sebagian durasi | **LOGIC VERIFIED** — `null.inPoint` & `null.outPoint` mengikuti nilai in/out layer target. |
-| **T04** | Beberapa layer dipilih | **LOGIC VERIFIED** — Setiap layer di-loop dan menerima 1 Null masing-masing. |
-| **T05** | Beberapa layer dengan durasi berbeda | **LOGIC VERIFIED** — Masing-masing Null disinkronkan ke in/outPoint layer pasangannya. |
-| **T06** | Layer memiliki transform (Pos, Scale, Rot, Anchor) | **LOGIC VERIFIED** — Layer sumber bertindak sebagai parent; transform-nya tidak diubah sama sekali. |
-| **T07** | Layer memiliki keyframe | **LOGIC VERIFIED** — Nilai dan keyframe layer target tidak dimodifikasi. |
-| **T08** | Undo (Ctrl+Z) | **LOGIC VERIFIED** — Seluruh blok pembuatan terbungkus dalam satu `$.DoMotions.utils.undoGroup('Create Null')`. |
-| **T09** | Tombol & referensi "Null at Selected" dihapus | **VERIFIED** — Bersih dari template HTML, event listener, command, dan JSX backend (zero dead code). |
+> [!NOTE]
+> *Runtime validation belum dilakukan karena After Effects tidak tersedia.*  
+> Seluruh hasil di bawah diverifikasi melalui static analysis dan peninjauan logika ExtendScript DOM.
 
-> *Catatan Pengujian Runtime:*  
-> **Runtime validation belum dilakukan karena After Effects tidak tersedia.**  
-> Seluruh pengecekan statis, integritas AST, dan verifikasi alur data internal telah selesai dan valid.
+| Test ID | Skenario Pengujian | Hasil yang Diharapkan | Status Evaluasi | Catatan / Mekanisme |
+|---|---|---|---|---|
+| **T01** | Pilih 1 layer → klik Null | Timeline: `Null └── Selected Layer`<br>`selectedLayer.parent == Null`<br>`Null.parent == null` | **ANALYSIS PASS** | Dibuat di atas layer, `targetLayer.parent = nullLayer`, `nullLayer.parent == null`. |
+| **T02** | Gerakkan Null | Selected Layer ikut bergerak | **ANALYSIS PASS** | Selected layer bertindak sebagai child, sehingga mewarisi delta transformasi parent. |
+| **T03** | Posisi visual selected layer sebelum & sesudah parenting | Tidak ada pergeseran visual di viewport | **ANALYSIS PASS** | Posisi Null diset ke comp position layer target sebelum parenting; AE menghitung koordinat lokal tanpa pergeseran. |
+| **T04** | Periksa frame range Null | `Null.inPoint == SelectedLayer.inPoint`<br>`Null.outPoint == SelectedLayer.outPoint` | **ANALYSIS PASS** | Nilai inPoint dan outPoint Null disinkronkan secara identik. |
+| **T05** | Multiple selected layers (A, B, C) | Setiap layer memiliki Null controller masing-masing | **ANALYSIS PASS** | Loop terisolasi membuat `Null A └── Layer A`, `Null B └── Layer B`, `Null C └── Layer C`. |
+| **T06** | Solid + selected layer | `Solid.parent == null` | **ANALYSIS PASS** | Solid mewarisi frame range tanpa pernah mengaitkan properti `.parent`. |
+| **T07** | Adjustment + selected layer | `Adjustment.parent == null` | **ANALYSIS PASS** | Adjustment mewarisi frame range tanpa pernah mengaitkan properti `.parent`. |
+
+---
+
+## 10. Undo Operation
+Seluruh operasi pembuatan Null, sinkronisasi frame range, penataan posisi, dan penugasan parenting (`selectedLayer.parent = nullLayer`) dibungkus dalam blok tunggal:
+```javascript
+$.DoMotions.utils.undoGroup('Create Null', function () { ... });
+```
+Satu kali penekanan Ctrl+Z (Undo) akan membatalkan seluruh operasi sekaligus dan mengembalikan hierarki serta layer ke kondisi semula.
 
 ---
 
 ## 11. Regression Testing
-- **Create Solid:** Tidak terpengaruh (`DoMotions.Commands.Layer.createSolid`).
-- **Create Adjustment Layer:** Tidak terpengaruh (`DoMotions.Commands.Layer.createAdjustmentLayer`).
-- **Parent to Null:** Tidak terpengaruh (`DoMotions.Commands.Layer.parentToNull`).
-- **Duplicate Selected:** Tidak terpengaruh (`DoMotions.Commands.Layer.duplicateSelected`).
-- **Rename Selected:** Tidak terpengaruh (`DoMotions.Commands.Layer.renameSelected`).
-- **Select Similar:** Tidak terpengaruh (`DoMotions.Commands.Layer.selectSimilar`).
-- **Toggles (Shy, Lock, Guide):** Tidak terpengaruh.
-- **Anchor Module, Easing, Graph, Text, Settings:** 100% tidak disentuh.
-
----
-
-## 12. Limitasi & Rekomendasi
-- **Limitasi:** Jika comp terkunci atau tidak ada komposisi aktif, ExtendScript akan melempar error standard DoMotions (*"No active composition"*), yang ditangani secara elegan oleh status bar & toast notification.
-- **Rekomendasi:** Pengujian langsung di Adobe After Effects dapat dilakukan dengan memilih variasi layer 2D dan 3D untuk memverifikasi keselarasan visual controller di viewport.
+- **Layers Module:**
+  - `Create Solid`: Mengikuti frame range tanpa parenting (`parent == null`), label merah (`1`).
+  - `Create Adjustment`: Mengikuti frame range tanpa parenting (`parent == null`), label biru clay (`8`).
+  - `Parent to Null`: Tetap berfungsi normal untuk mem-parent multi-layer ke 1 null rata-rata.
+  - `Duplicate`, `Rename`, `Select Similar`, `Shy`, `Lock`, `Guide`: Bekerja normal.
+- **Anchor, Easing, Graph, Settings:** 100% tidak mengalami perubahan.

@@ -3,13 +3,61 @@
     $.DoMotions.modules = $.DoMotions.modules || {};
     $.DoMotions.modules.layer = {};
 
+    // After Effects Timeline Layer Label Color Indices (Preferences > Labels)
+    var LABEL_COLORS = {
+        NONE: 0,
+        SOLID: 1,        // Red (Merah)
+        ADJUSTMENT: 8,   // Blue (Biru Clay / Slate Blue)
+        NULL: 9          // Green (Hijau)
+    };
+
     function _createNull(comp, name) {
         var nullLayer = comp.layers.addNull();
         if (name) nullLayer.name = name;
+        nullLayer.label = LABEL_COLORS.NULL;
         return nullLayer;
     }
 
-    // 1. Create Null Object (Smart behavior: normal null if no selection, or parented null for each selected layer)
+    function _readLayerPosition(layer, is3D) {
+        if (layer.position && layer.position.dimensionsSeparated) {
+            var tg = layer.property("ADBE Transform Group");
+            var x = tg.property("ADBE Position_0").value;
+            var y = tg.property("ADBE Position_1").value;
+            return is3D ? [x, y, tg.property("ADBE Position_2").value] : [x, y];
+        }
+        if (layer.position) {
+            return layer.position.value;
+        }
+        return [0, 0];
+    }
+
+    function _getLayerCompPosition(layer) {
+        var is3D = layer.threeDLayer;
+        if (!layer.parent) {
+            var p = _readLayerPosition(layer, is3D);
+            if (is3D && p.length < 3) return [p[0], p[1], 0];
+            return p;
+        }
+
+        if (typeof layer.sourcePointToComp === 'function' && layer.anchorPoint) {
+            try {
+                var anchor = layer.anchorPoint.value;
+                var pt = layer.sourcePointToComp([anchor[0], anchor[1]]);
+                if (is3D) {
+                    var posVal = _readLayerPosition(layer, is3D);
+                    var z = (posVal.length > 2) ? posVal[2] : 0;
+                    return [pt[0], pt[1], z];
+                }
+                return [pt[0], pt[1]];
+            } catch (e) {
+                // fallback
+            }
+        }
+
+        return _readLayerPosition(layer, is3D);
+    }
+
+    // 1. Create Null Object (Smart behavior: normal null if no selection, or parent controller null for each selected layer)
     $.DoMotions.modules.layer.createNull = function (params) {
         return $.DoMotions.utils.undoGroup('Create Null', function () {
             var comp = $.DoMotions.utils.getActiveComp();
@@ -19,13 +67,14 @@
             if (!selected || selected.length === 0) {
                 var singleNull = _createNull(comp, (params && params.name) ? params.name : 'Null');
                 singleNull.position.setValue([comp.width / 2, comp.height / 2]);
+                singleNull.label = LABEL_COLORS.NULL;
                 return {
                     affectedLayers: 1,
                     message: 'Created Null Object'
                 };
             }
 
-            // Scenario B: One or more layers selected -> create parented null for each selected layer
+            // Scenario B: One or more layers selected -> create parent null for each selected layer
             // Snapshot selected layers into an array because adding layers alters comp.selectedLayers
             var targets = [];
             for (var i = 0; i < selected.length; i++) {
@@ -37,6 +86,7 @@
                 var targetLayer = targets[j];
                 var nullName = (params && params.name) ? (params.name + ' for ' + targetLayer.name) : ('Null for ' + targetLayer.name);
                 var nullLayer = _createNull(comp, nullName);
+                nullLayer.label = LABEL_COLORS.NULL;
 
                 // Match 3D status of target layer
                 if (targetLayer.threeDLayer) {
@@ -46,7 +96,7 @@
                 // Place Null directly above target layer on timeline
                 nullLayer.moveBefore(targetLayer);
 
-                // Synchronize duration: match inPoint and outPoint with parent layer
+                // Synchronize duration: match inPoint and outPoint with target layer
                 var inP = targetLayer.inPoint;
                 var outP = targetLayer.outPoint;
                 if (inP > nullLayer.outPoint) {
@@ -57,15 +107,16 @@
                     nullLayer.outPoint = outP;
                 }
 
-                // Parent Null to target layer (Null becomes child, targetLayer becomes parent)
-                nullLayer.parent = targetLayer;
-
-                // Align Null position with parent layer origin in parent local coordinate space
+                // Match position to target layer's comp position before parenting
+                var compPos = _getLayerCompPosition(targetLayer);
                 if (nullLayer.threeDLayer) {
-                    nullLayer.position.setValue([0, 0, 0]);
+                    nullLayer.position.setValue(compPos.length > 2 ? compPos : [compPos[0], compPos[1], 0]);
                 } else {
-                    nullLayer.position.setValue([0, 0]);
+                    nullLayer.position.setValue([compPos[0], compPos[1]]);
                 }
+
+                // Parent target layer to Null (Null becomes PARENT, targetLayer becomes CHILD)
+                targetLayer.parent = nullLayer;
 
                 createdNulls.push(nullLayer);
             }
@@ -93,7 +144,27 @@
             var w = params.width || comp.width;
             var h = params.height || comp.height;
             var name = params.name || 'Solid';
+
+            // Snapshot selected layers before addSolid changes selection
+            var selected = comp.selectedLayers;
+            var refLayer = (selected && selected.length > 0) ? selected[0] : null;
+
             var solid = comp.layers.addSolid(color, name, w, h, comp.pixelAspect, comp.duration);
+            solid.label = LABEL_COLORS.SOLID;
+
+            // If a layer was selected, match its frame range (without parenting)
+            if (refLayer) {
+                var inP = refLayer.inPoint;
+                var outP = refLayer.outPoint;
+                if (inP > solid.outPoint) {
+                    solid.outPoint = outP;
+                    solid.inPoint = inP;
+                } else {
+                    solid.inPoint = inP;
+                    solid.outPoint = outP;
+                }
+            }
+
             return { affectedLayers: 1, message: 'Created Solid Layer' };
         });
     };
@@ -103,8 +174,28 @@
         return $.DoMotions.utils.undoGroup('Create Adjustment Layer', function () {
             var comp = $.DoMotions.utils.getActiveComp();
             var name = params.name || 'Adjustment Layer';
-            var adj = comp.layers.addSolid([1,1,1], name, comp.width, comp.height, comp.pixelAspect, comp.duration);
+
+            // Snapshot selected layers before addSolid changes selection
+            var selected = comp.selectedLayers;
+            var refLayer = (selected && selected.length > 0) ? selected[0] : null;
+
+            var adj = comp.layers.addSolid([1, 1, 1], name, comp.width, comp.height, comp.pixelAspect, comp.duration);
             adj.adjustmentLayer = true;
+            adj.label = LABEL_COLORS.ADJUSTMENT;
+
+            // If a layer was selected, match its frame range (without parenting)
+            if (refLayer) {
+                var inP = refLayer.inPoint;
+                var outP = refLayer.outPoint;
+                if (inP > adj.outPoint) {
+                    adj.outPoint = outP;
+                    adj.inPoint = inP;
+                } else {
+                    adj.inPoint = inP;
+                    adj.outPoint = outP;
+                }
+            }
+
             return { affectedLayers: 1, message: 'Created Adjustment Layer' };
         });
     };
